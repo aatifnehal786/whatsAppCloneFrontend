@@ -24,7 +24,7 @@ const Homepage = () => {
     fetchAllUsers();
   }, []);
 
-  console.log('All Users:', allUsers);
+
 
   return (
     <Layout>

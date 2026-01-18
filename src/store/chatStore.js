@@ -4,7 +4,7 @@ import apiInstance from "../services/url.services";
 
 
 export const useChatStore = create((set,get)=> ({
-    conversations: [],
+    conversation: [],
     currentConversation: null,
     messages : [],
     loading: false,
@@ -19,13 +19,7 @@ export const useChatStore = create((set,get)=> ({
             const socket = getSocket();
             if(!socket) return;
 
-            // remove existing listeners to prevent duplicate handlers
-            socket.off("receive_message");
-            socket.off("user_typing");
-            socket.off("user_status");
-            socket.off("message_send");
-            socket.off("message_error");
-            socket.off("message_deleted")
+            
 
             // listen for incomming messages
             socket.on("receive_message",(message)=> {
@@ -63,6 +57,17 @@ export const useChatStore = create((set,get)=> ({
             console.error("message error",error)
         })
 
+
+        socket.on("message_status_update", ({ messageId, messageStatus }) => {
+            set((state) => ({
+                messages: state.messages.map((msg) =>
+                    msg._id === messageId
+                        ? { ...msg, messageStatus }
+                        : msg
+                ),
+            }));
+        });
+
         // typing users
         socket.on("user_typing",({userId,conversationId,isTyping})=> {
             set((state)=>{
@@ -95,10 +100,13 @@ export const useChatStore = create((set,get)=> ({
             })
         });
 
-        const { conversations } = get();
+   
 
-if (conversations?.data?.length > 0) {
-    conversations.data.forEach((conv) => {
+
+        const { conversation } = get();
+
+if (conversation?.data?.length > 0) {
+    conversation.data.forEach((conv) => {
         const otherUser = conv.participants.find(
             (p) => p._id !== get().currentUser._id
         );
@@ -111,7 +119,7 @@ if (conversations?.data?.length > 0) {
                     set((state) => {
                         const newOnlineUsers = new Map(state.onlineUsers);
 
-                        newOnlineUsers.set(otherUser._id, {
+                        newOnlineUsers.set(state.userId, {
                             isOnline: status.isOnline,
                             lastSeen: status.lastSeen,
                         });
@@ -134,8 +142,8 @@ if (conversations?.data?.length > 0) {
     fetchConversation : async() => {
         set({loading: true,error:null});
         try {
-            const {data} = await apiInstance.get("/chats/conversations");
-            set({conversations: data,loading:false});
+            const {data} = await apiInstance.get("/auth/chats/conversations");
+            set({conversation: data,loading:false});
             get().initializeSocketListeners();
             return data;
 
@@ -148,42 +156,114 @@ if (conversations?.data?.length > 0) {
         }
     },
 
-    //fetch messages for a user
-    fetchMessages: async(conversationId)=>{
-        if(!conversationId) return
-        set({loading:true,error:null})
-        try {
-            const {data} = await apiInstance.get(`/chats/conversations/${conversationId}/messages`);
-            const messageArray = data.data || data || [];
-            set({
-                messages: messageArray,
-                currentConversation:conversationId,
-                loading: true
-            })
-            // mark unread messages as read
-            const {marKMessageAsRead} = get()
-            marKMessageAsRead()
+
+    
 
 
 
-            return messageArray;
-        } catch (error) {
-            set({
-                error: error?.response?.data?.message || error?.message
-            });
-            return [];
-        }
+   fetchMessages: async (conversationId) => {
+  if (!conversationId) return;
 
-    },
+  set({ loading: true, error: null });
+
+  try {
+    const { data } = await apiInstance.get(
+      `/auth/chats/conversations/${conversationId}/messages`
+    );
+
+    const messageArray = data?.data || data || [];
+
+    set({
+      messages: messageArray,
+      currentConversation: conversationId,
+      loading: false,
+    });
+
+  // mark unread messages as read
+ const {marKMessageAsRead} = get()
+ marKMessageAsRead()
+    
+
+    return messageArray;
+  } catch (error) {
+    set({
+      loading: false,
+      error: error?.response?.data?.message || error?.message,
+    });
+    return [];
+  }
+},
+
     // send message in real time
     sendMessage: async(formData)=> {
+         const senderId = formData.get("senderId")
+         const receiverId = formData.get("receiverId")   
+         const media = formData.get("content")
+         const content = formData.get("content")
+         const messageStatus = formData.get("messageStatus")
+
+
+         const socket = getSocket();
+
+         const {conversation} = get();
+         let conversationId = null;
+         if(conversation?.data?.length>0) {
+            const conversations = conversation.data.find((conv)=>
+            conv.participants.some((p)=>p._id===senderId) && conv.participants.some((p)=>p._id===receiverId))
+         
+         if(conversations) {
+            conversationId = conversation._id;
+            set({currentConversation:conversationId})
+         }
+        }
+
+         // temporary message before actual response
+         const tempId = `temp-${Date.now()}`
+         const optimisticMessage = {
+            _id: tempId,
+            sender: {_id:senderId},
+            receiver: {_id:receiverId},
+            conversation: conversationId,
+            imageOrVideoUrl: media && typeof media !== 'string' ? URL.createObjectURL(media) : null,
+            content: content,
+            contentType: media ? media.type.startswith("image") ? "image" :"video" : "text",
+            createdAt: new Date().toISOString(),
+            messageStatus
+         }
+         set((state)=> ({
+            messages: {...state.messages,optimisticMessage}
+         }))
+
+         try {
+            const {data} = await apiInstance.post("/auth/chats/send-message",formData,
+                {headers:{"Content-Type":"multipart/form-data"}}
+            )
+            const messageData = await data.data || data;
+            set((state)=> ({
+                messages: state.messages.map((msg)=>
+                msg._id === tempId ? messageData : msg)
+            }))
+            return messageData
+         } catch (error) {
+            console.log("Error sending message",error)
+            set((state)=> ({
+                messages: state.messages.map((msg)=>
+                msg._id === tempId ? {...msg,messageStatus:"failed"} : msg),
+                 error: error?.response?.data?.message || error?.message
+ }))
+         }
+
+        
 
     },
+
+   
+    
 
     receiveMessage: (message)=> {
         if(!message) return
 
-        const {currentUser,currentConversation} = get();
+        const {currentUser,currentConversation,messages} = get();
         const messageExists = message.some((msg)=>msg._id === message._id)
         if(messageExists) return
         
@@ -193,10 +273,9 @@ if (conversations?.data?.length > 0) {
             }))
 
 
-            // automatically mark as read
-            if(message?.receiver?._id === currentUser?._id) {
-                get().marKMessageAsRead();
-            }
+           if(message.receiver?._id === currentUser?._id){
+            get().marKMessageAsRead()
+           }
 
             }
             // update conversation preview and current count
@@ -229,44 +308,50 @@ if (conversations?.data?.length > 0) {
     },
 
 
-    // mark as read
+   // mark message as read
 
-     marKMessageAsRead : async ()=> {
+marKMessageAsRead: async ()=> {
         const {messages,currentUser} = get()
 
-        if(messages.length || currentUser) return;
-
-        const unreadIds = messages.filter((msg)=> msg.messageStatus !== 'read' && msg?.receiver?._id === currentUser?._id).map((msg) => msg._id).filter(Boolean)
+        if(!messages.length || !currentUser) return
+        const unreadIds = messages.filter((msg)=> msg.messageStatus !== 'read' && msg.receiver?._id === currentUser?._id).map((msg)=> msg._id).filter(Boolean)
         
         if(unreadIds.length === 0) return
 
         try {
-            const {data} = await apiInstance.put('/markasread',{
+            const {data} = await apiInstance.put("/auth/markasread",{
                 messageIds:unreadIds
-            });
+            })
+
+            console.log("message mark as read",data)
+
             set((state)=> ({
-                messages: state.messages.map((msg)=> 
-                    unreadIds.includes(msg._id) ? {...msg,messageStatus: 'read'} : msg
-                )
-            }));
-            const socket = getSocket();
+                messages: state.messages.map((msg)=>
+                unreadIds.includes(msg._id)? {...msg,messageStatus:"read"}: msg)
 
-            if(socket) {
+            }))
+
+            const socket = getSocket()
+
+            if(socket){
                 socket.emit("message_read",{
-                    messageIds: unreadIds,
-                    senderId: messages[0]?.sender?._id
-
+                    messageIds:unreadIds,
+                    senderId:messages[0]?.sender?._id
                 })
             }
         } catch (error) {
-            console.error("Failed to mark message as read",error)
+            console.error("failed to mark message as read",error)
         }
 
-    },
+
+        
+},
+
+
 
     deleteMessage: async (messageId)=> {
         try {
-            await apiInstance.delete(`/delete-messages/${messageId}`);
+            await apiInstance.delete(`/auth/delete-messages/${messageId}`);
             set((state)=> ({
                 messages: state.messages?.filter((msg)=> msg?._id !== messageId)
             }))

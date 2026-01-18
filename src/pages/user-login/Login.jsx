@@ -179,11 +179,13 @@ const Login = () => {
       formdata.append("profilePicture", selectedAvtar);
     }
 
-    await updateProfile(formdata);
+    const response = await updateProfile(formdata);
 
+    setUser(response.data.user); // ✅ VERY IMPORTANT
     toast.success("Profile updated successfully");
     resetLoginState();
     navigate("/");
+
   } catch (error) {
     console.error(error);
     setError(error.message || "Failed to update profile");
@@ -422,13 +424,13 @@ const Login = () => {
                                 <img src={profilePicture || selectedAvtar}
                                 className="w-full h-full rounded-full object-cover"/>
                                 <label
-                                htmlFor="profile-picture"
+                                htmlFor="profilepicture"
                                 className="absolute bottom-0 right-0 bg-green-500 text-white p-2 rounded-full cursor-pointer hover:bg-green-600 transition duration-300">
                                     <FaPlus className="w-4 h-4"/>
                                 </label>
                                 <input
                                 type="file"
-                                id="profile-picture"
+                                id="profilepicture"
                                 accept="image/*"
                                 onChange={handleFileChange}
                                 className="hidden"/>

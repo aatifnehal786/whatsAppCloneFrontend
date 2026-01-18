@@ -13,9 +13,10 @@ const ChatList = ({contacts}) => {
   const {theme} = useThemeStore();
   const {user} = useUserStore();
   const [searchTerm,setSearchTerm] = useState("");
+ 
 
-  const filteredContacts = contacts.filter((contact)=>contact?.userName?.toLowerCase().includes(searchTerm.toLowerCase()))
-  console.log(filteredContacts)
+  // const filteredContacts = contacts.filter((contact)=>contact?.userName?.toLowerCase().includes(searchTerm.toLowerCase()))
+  // console.log(filteredContacts)
   return (
     <div className={`w-full border-r h-screen ${theme === 'dark' ? 'bg-[rgb(17,27,33)] border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className={ `p-4 flex justify-between ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
@@ -41,7 +42,7 @@ const ChatList = ({contacts}) => {
 
       </div>
       <div className='overflow-y-auto h-[calc(100vh-120px)]'>
-        {filteredContacts.map((contact)=>{
+        {contacts.map((contact)=>{
            return (
              <motion.div
             key={contact?._id}
@@ -55,20 +56,17 @@ const ChatList = ({contacts}) => {
                 <div className='flex justify-between items-baseline'>
                   <h2 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-black'}`}>{contact.userName}</h2>
                   {contact?.conversation && (
-                    <span className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {formatTime(contact?.conversation?.createdAt)}
+                    <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                      {formatTime(contact?.conversation?.lastMessage?.createdAt)}
                     </span>
                   )}
                 </div>
                 <div className='flex justify-between items-baseline'>
-                  <p className={`text-sm ${theme === 'dark' ? 'bg-gray-400' : 'bg-gray-500'} truncate`}>{contact?.conversation?.lastMessage?.content}</p>
-                  {contact?.conversation && contact?.conversation?.unreadCounts > 0 && contact?.conversation?.lastMessage?.receiver === user?._id &&  
-                   (
-                     <p className={`text-sm ${theme === 'dark' ? 'bg-gray-400' : 'bg-gray-500'} flex items-center w-6 h-6 font-semibold bg-yellow-500`}>
-                      {contact?.conversation?.unreadCounts}
-                    </p>
-                   )
-                  }
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} truncate`}>
+                  {contact?.conversation?.lastMessage?.content}
+                </p>
+                  {contact?.conversation && contact?.conversation?.unreadCounts > 0 && contact?.conversation?.lastMessage?.sender !== user._id && 
+                  <p className={`text-sm font-semibold w-6 h-6 flex items-center justify-center bg-yellow-500 rounded-full ${theme === 'dark' ? 'text-gray-800' : 'text-gray-500'} truncate`}>{contact.conversation?.unreadCounts}</p> }
                 </div>
 
               </div>
