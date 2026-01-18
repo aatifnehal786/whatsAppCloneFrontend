@@ -1,63 +1,60 @@
-
-import './App.css';
-import { useEffect } from 'react';
-import {BrowserRouter as Router, Routes,Route} from "react-router-dom"
-import Login from './pages/user-login/Login';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import HomeScreen from "./components/HomePage";
+import UserDetails from "./components/UserDetails";
+import StatusPage from "./page/StatusSection/StatusPage";
+import Login from "./page/user-login/Login";
 import { ProtectedRoute, PublicRoute } from './Protected';
-import Homepage from './components/Homepage';
-import UserDetails from './components/UserDetails';
-import Status from './pages/statusSection/Status';
-import Settings from './pages/settingSection/Settings';
-import useUserStore from './store/useUserStore';
-import {  disconnectSocket, initializeSocket } from './services/chatServices';
+import Setting from './page/SettingSection/Seetings';
 import { useChatStore } from './store/chatStore';
-
-
+import userStore from './store/useUserStore';
+import { disconnectSocket, initializeSocket } from './services/chat.service';
 
 function App() {
+  const { setCurrentUser, initSocketListeners, cleanup } = useChatStore()
+  const { user } = userStore()
 
-  const {user} = useUserStore();
-  const {initializeSocketListeners,setCurrentUser,cleanUp} = useChatStore()
- 
+  useEffect(() => {
+    // Initialize socket when user is logged in
+    if (user?._id) {
+      const socket = initializeSocket()
 
- useEffect(()=>{
-  if(user?._id) {
-    const socket = initializeSocket();
+      if (socket) {
+        // Set current user in chat store
+        setCurrentUser(user)
 
-
-    if(socket) {
-      setCurrentUser(user)
-      initializeSocketListeners()
+        // Initialize socket listeners
+        initSocketListeners()
+      }
     }
 
-  }
-
-  return ()=> {
-    cleanUp();
-    disconnectSocket();
-  }
- },[user,setCurrentUser,initializeSocketListeners,cleanUp])
-
-
+    // Cleanup on unmount
+    return () => {
+      cleanup()
+      disconnectSocket()
+    }
+  }, [user, setCurrentUser, initSocketListeners, cleanup])
+ 
   return (
-  <>
-    <ToastContainer position='top-right' autoClose={3000} />
-   <Router>
-    <Routes>
-      <Route element={ <PublicRoute/>}>
-        <Route path="/login" element={ <Login/>} />
-      </Route>
-      <Route element={ <ProtectedRoute/>}>
-      <Route path='/' element={<Homepage/>}/>
-      <Route path='/user-details' element={<UserDetails/>}/>
-      <Route path='/status' element={<Status/>}/>
-      <Route path='settings' element={<Settings/>}/>
-      </Route>
-    </Routes>
-   </Router>
-  </>
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Router>
+        <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/user-login" element={<Login />} />
+          </Route>
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/user-details" element={<UserDetails />} />
+            <Route path="/status" element={<StatusPage />} />
+            <Route path="/setting" element={< Setting/>} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-  export default function formatTimestamp(timestamp) {
+export default function formatTimestamp(timestamp) {
   const now = Date.now();
     const messageTime = new Date(timestamp).getTime();
     const diff = now - messageTime;
