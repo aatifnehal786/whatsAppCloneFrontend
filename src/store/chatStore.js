@@ -231,7 +231,7 @@ if (conversation?.data?.length > 0) {
             messageStatus
          }
          set((state)=> ({
-            messages: {...state.messages,optimisticMessage}
+            messages: [...state.messages,optimisticMessage]
          }))
 
          try {
@@ -269,7 +269,7 @@ if (conversation?.data?.length > 0) {
         
         if(message.conversation===currentConversation) {
             set((state)=> ({
-                messages:{...state.message,message}
+                messages:[...state.message,message]
             }))
 
 
