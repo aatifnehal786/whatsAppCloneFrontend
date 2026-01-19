@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import HomeScreen from "./components/HomePage";
 import UserDetails from "./components/UserDetails";
 import StatusPage from "./page/StatusSection/StatusPage";
 import Login from "./page/user-login/Login";
@@ -11,6 +10,7 @@ import Setting from './page/SettingSection/Seetings';
 import { useChatStore } from './store/chatStore';
 import userStore from './store/useUserStore';
 import { disconnectSocket, initializeSocket } from './services/chat.service';
+import HomePage from './components/HomePage';
 
 function App() {
   const { setCurrentUser, initSocketListeners, cleanup } = useChatStore()
@@ -47,7 +47,7 @@ useEffect(() => {
           </Route>
           
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomeScreen />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/user-details" element={<UserDetails />} />
             <Route path="/status" element={<StatusPage />} />
             <Route path="/setting" element={< Setting/>} />
