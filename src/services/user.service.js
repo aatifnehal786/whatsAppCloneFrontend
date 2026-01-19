@@ -28,18 +28,18 @@ export const sendOtp = async (phoneNumber, phoneSuffix,email) => {
     }
 }
 
-export const checkUserAuth = async() =>{
+export const checkUserAuth = async () => {
   try {
-       const response= await axiosInstance.get('/users/check-auth');
-       if(response.data.status === 'success'){
-          return {isAuthenticated :true, user:response?.data?.data}
-       }else if(response.status === 'error'){
-          return {isAuthenticated :false}
-       }
+    const response = await axiosInstance.get("/users/check-auth");
+    return {
+      isAuthenticated: true,
+      user: response.data.data,
+    };
   } catch (error) {
-       throw error.response ? error.response.data : error.message;
+    return { isAuthenticated: false };
   }
-}
+};
+
 
 
 export const logoutUser = async() =>{
