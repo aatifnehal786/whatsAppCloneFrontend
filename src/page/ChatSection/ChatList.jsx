@@ -16,7 +16,8 @@ const ChatList = ({ contacts }) => {
   // const filteredContacts = contacts?.filter((contact) =>
   //   contact?.username?.toLowerCase().includes(searchTerm.toLowerCase())
   // );
-
+console.log(user)
+console.log(selectedContact)
   return (
     <div
       className={`w-full border-r h-screen ${

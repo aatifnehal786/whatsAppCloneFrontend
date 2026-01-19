@@ -145,34 +145,37 @@ export const useChatStore = create((set, get) => ({
   },
 
   // ======== Fetch Messages for a Conversation ========
- fetchMessages: async (conversationId) => {
-  if (!conversationId) return;
+  fetchMessages: async (conversationId) => {
+    if (!conversationId) return;
 
-  set({ loading: true, error: null });
-  try {
-    const { data } = await axiosInstance.get(
-      `/chats/conversations/${conversationId}/messages`
-    );
+    set({ loading: true, error: null });
+    try {
+      const { data } = await axiosInstance.get(
+        `/chats/conversations/${conversationId}/messages`
+      );
 
-    const messagesArray = data.data || [];
+      const messageArray = data.data || data || [];
 
-    set({
-      messages: messagesArray,
-      currentConversation: conversationId,
-      loading: false,
-    });
+      set({
+        messages: messageArray,
+        currentConversation: conversationId,
+        loading: false,
+      });
 
-    return messagesArray;
-  } catch (error) {
-    console.error("Error fetching messages:", error);
-    set({
-      error: error.response?.data?.message || error.message,
-      loading: false,
-    });
-    return [];
-  }
-},
+      // Mark unread messages as read
+      const { markMessagesAsRead } = get();
+      markMessagesAsRead();
 
+      return messageArray;
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      set({
+        error: error.response?.data?.message || error.message,
+        loading: false,
+      });
+      return [];
+    }
+  },
 
   // ======== Send a Message with Optimistic Update ========
   sendMessage: async (formData) => {
@@ -264,43 +267,45 @@ export const useChatStore = create((set, get) => ({
   receiveMessage: (message) => {
     if (!message) return;
 
-    const { currentUser } = get();
+    const { currentConversation, currentUser, messages } = get();
 
-   set((state) => {
-    const exists = state.messages.some(
-      (msg) => msg._id === message._id
-    );
-    if (exists) return state;
+    const messageExists = messages.some((msg) => msg._id === message._id);
+    if (messageExists) return;
 
-    return {
-      messages: [...state.messages, message],
-    };
-  });
+    if (message.conversation === currentConversation) {
+      set((state) => ({
+        messages: [...state.messages, message],
+      }));
 
-  
-  // update conversation list
-  set((state) => {
-    const updated = state.conversations?.data?.map((conv) => {
-      if (String(conv._id) === String(message.conversation)) {
-        return {
-          ...conv,
-          lastMessage: message,
-          unreadCount:
-            message.receiver?._id === currentUser?._id
-              ? (conv.unreadCount || 0) + 1
-              : conv.unreadCount || 0,
-        };
+      // Automatically mark as read if viewing the conversation
+      if (message.receiver?._id === currentUser?._id) {
+        get().markMessagesAsRead();
       }
-      return conv;
-    });
+    }
 
-    return {
-      conversations: {
-        ...state.conversations,
-        data: updated,
-      },
-    };
-  });
+    // Update conversation preview and unread count
+    set((state) => {
+      const updatedConversations = state.conversations?.data?.map((conv) => {
+        if (conv._id === message.conversation) {
+          return {
+            ...conv,
+            lastMessage: message,
+            unreadCount:
+              message.receiver?._id === currentUser?._id
+                ? (conv.unreadCount || 0) + 1
+                : conv.unreadCount || 0,
+          };
+        }
+        return conv;
+      });
+
+      return {
+        conversations: {
+          ...state.conversations,
+          data: updatedConversations,
+        },
+      };
+    });
   },
 
   // ======== Mark Unread Messages as Read ========

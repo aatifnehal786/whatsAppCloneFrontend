@@ -297,8 +297,7 @@ useEffect(() => {
   }
 
 
-  console.log("MESSAGES:", messages);
-console.log("GROUPED:", groupedMessages);
+
 
 
   return (
