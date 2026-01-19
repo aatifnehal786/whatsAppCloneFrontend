@@ -18,7 +18,7 @@ import {
   updateUserProfile,
   verifyOtp,
 } from "../../services/user.service";
-import countries from "../../utils/countries";
+import countries from "../../utils/Countries";
 import useLoginStore from "../../store/useLoginStore";
 import { toast } from "react-toastify";
 import userStore from "../../store/useUserStore";
