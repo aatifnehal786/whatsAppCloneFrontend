@@ -9,7 +9,7 @@ import { useChatStore } from '../store/chatStore'
 
 
 
-export default function HomeScreen() {
+export default function HomePage() {
     const setSelectedContact = useStore((state) => state.setSelectedContact)
     const [allUsers,setAllUsers] = useState([])
     const {messages} = useChatStore();
