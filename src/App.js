@@ -17,25 +17,25 @@ function App() {
   const { user } = userStore()
 
   useEffect(() => {
-    // Initialize socket when user is logged in
-    if (user?._id) {
-      const socket = initializeSocket()
+  if (!user?._id) return;
 
-      if (socket) {
-        // Set current user in chat store
-        setCurrentUser(user)
+  const socket = initializeSocket();
+  if (!socket) return;
 
-        // Initialize socket listeners
-        initSocketListeners()
-      }
-    }
+  setCurrentUser(user);
 
-    // Cleanup on unmount
-    return () => {
-      cleanup()
-      disconnectSocket()
-    }
-  }, [user, setCurrentUser, initSocketListeners, cleanup])
+  return () => {
+    disconnectSocket();
+  };
+}, [user?._id]);
+
+useEffect(() => {
+  initSocketListeners();
+
+  return () => cleanup();
+}, []);
+
+
  
   return (
     <>

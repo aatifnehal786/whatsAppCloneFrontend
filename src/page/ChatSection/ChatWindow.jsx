@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { format, isToday, isYesterday } from "date-fns";
 import {
   FaVideo,
@@ -55,6 +55,8 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
     conversations,
     addReaction,
     deleteMessage,
+    currentUser,
+    setCurrentUser
   } = useChatStore();
   const { initiateCall } = useVideoCallStore();
 
@@ -63,36 +65,54 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
   const lastSeen = getUserLastSeen(selectedContact?._id);
   const isTyping = isUserTyping(selectedContact?._id);
 
-  useEffect(() => {
-    if (selectedContact?._id && conversations?.data?.length > 0) {
-      const conversation = conversations.data.find((conv) =>
-        conv.participants.some(
-          (participant) => participant._id === selectedContact._id
-        )
-      );
-      if (conversation?._id) {
-        fetchMessages(conversation._id);
-      }
-    }
-  }, [selectedContact, conversations]);
+useEffect(() => {
+  const loadMessages = async () => {
+    if (!selectedContact?._id || !conversations?.data?.length) return;
+
+    const conversation = conversations.data.find((conv) =>
+      conv.participants.some((p) => p._id === selectedContact._id)
+    );
+
+    if (!conversation?._id) return;
+
+    await fetchMessages(conversation._id); // await ensures store updates before rendering
+  };
+
+  loadMessages();
+}, [selectedContact, conversations, fetchMessages]);
+
 
   useEffect(() => {
     fetchConversations();
   }, []);
 
-  // Fetch messages when selected contact changes
-  // useEffect(() => {
-  //   if (selectedContact?._id && conversations?.data?.length > 0) {
-  //     const conversation = conversations.data.find((conv) =>
-  //       conv.participants.some(
-  //         (participant) => participant._id === selectedContact._id
-  //       )
-  //     );
-  //     if (conversation?._id) {
-  //       fetchMessages(conversation._id);
-  //     }
-  //   }
-  // }, [selectedContact, conversations]);
+
+
+   
+
+  // 3️⃣ Group messages by date (removing duplicates)
+ const groupedMessages = useMemo(() => {
+  if (!messages?.length) return {};
+
+  return messages.reduce((acc, msg) => {
+    if (!msg.createdAt) return acc;
+
+    const date = new Date(msg.createdAt);
+    if (!isValidDate(date)) return acc;
+
+    const dateKey = format(date, "yyyy-MM-dd");
+
+    if (!acc[dateKey]) acc[dateKey] = [];
+    if (!acc[dateKey].some((m) => m._id === msg._id)) {
+      acc[dateKey].push(msg);
+    }
+
+    return acc;
+  }, {});
+}, [messages]);
+
+
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
@@ -147,7 +167,7 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
       formData.append("senderId", user._id);
       formData.append("receiverId", selectedContact._id);
 
-      const status = online ? "delivered" : "send";
+      const status = online ? "delivered" : "sent";
       formData.append("messageStatus", status);
 
       if (message.trim()) {
@@ -232,24 +252,10 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
     );
   };
 
-  // Group messages by date
-  const groupedMessages = Array.isArray(messages)
-    ? messages.reduce((acc, message) => {
-        if (!message.createdAt) return acc;
 
-        const date = new Date(message.createdAt);
-        if (isValidDate(date)) {
-          const dateString = format(date, "yyyy-MM-dd");
-          if (!acc[dateString]) {
-            acc[dateString] = [];
-          }
-          acc[dateString].push(message);
-        } else {
-          console.error("Invalid date for message:", message);
-        }
-        return acc;
-      }, {})
-    : {};
+
+
+
 
   const handleReaction = (messageId, emoji) => {
     addReaction(messageId, emoji);
@@ -289,6 +295,11 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
       </div>
     );
   }
+
+
+  console.log("MESSAGES:", messages);
+console.log("GROUPED:", groupedMessages);
+
 
   return (
     <>
@@ -356,26 +367,27 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
             theme === "dark" ? "bg-[#191a1a]" : "bg-[rgb(241,236,229)]"
           }`}
         >
-          {Object.entries(groupedMessages).map(([date, msgs]) => (
-            <React.Fragment key={date}>
-              {renderDateSeparator(new Date(date))}
-              {msgs
-                .filter(
-                  (msg) =>
-                    msg.conversation === selectedContact?.conversation?._id
-                )
-                .map((msg) => (
-                  <MessageBubble
-                    key={msg._id || msg.tempId}
-                    message={msg}
-                    theme={theme}
-                    currentUser={user}
-                    onReact={handleReaction}
-                    deleteMessage={deleteMessage}
-                  />
-                ))}
-            </React.Fragment>
-          ))}
+     {Object.entries(groupedMessages).map(([date, msgs]) => (
+  <React.Fragment key={date}>
+    {renderDateSeparator(new Date(date))}
+    {msgs.map((msg) => (
+      <MessageBubble
+        key={msg._id}
+        message={msg}
+        theme={theme}
+        currentUser={user}
+        onReact={handleReaction}
+        deleteMessage={deleteMessage}
+      />
+    ))}
+  </React.Fragment>
+))}
+
+
+
+
+
+
           <div ref={messagesEndRef} />
         </div>
         {filePreview && (

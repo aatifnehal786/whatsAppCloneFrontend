@@ -12,14 +12,16 @@ export const initializeSocket = () => {
   
   if (!user?._id) return null;
 
-  const BACKEND_URL = process.env.REACT_APP_API_URL;
-  
+  const BACKEND_URL =
+    process.env.REACT_APP_API_URL || "http://localhost:8000";
+
   socket = io(BACKEND_URL, {
-    // auth: { token },
-    withCredentials:true,
-    transports: ["websocket", "polling"],
-    reconnectionAttempts: 5,
+    withCredentials: true,
+    autoConnect: true,
+    reconnection: true,
+    reconnectionAttempts: 10,
     reconnectionDelay: 1000,
+    // 🚫 DO NOT force transports
   });
 
   // Connection events

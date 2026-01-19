@@ -20,7 +20,13 @@ const optionsRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const reactionsMenuRef = useRef(null);
 
-  const isUserMessage = message.sender._id === currentUser._id;
+  const senderId =
+  typeof message.sender === "object"
+    ? message.sender._id
+    : message.sender;
+
+const isUserMessage = String(senderId) === String(currentUser._id);
+
 
   const bubbleClass = isUserMessage ? `chat-end` : `chat-start`;
 
@@ -51,7 +57,8 @@ const optionsRef = useRef(null);
   if (showOptions) setShowOptions(false);
 });
 
-  if (message === 0) return;
+ if (!message) return null;
+
 
   return (
     <div className={`chat ${bubbleClass}`}>
@@ -85,10 +92,16 @@ const optionsRef = useRef(null);
 
         </div>
                   <div className="self-end flex items-center justify-end gap-1 text-xs opacity-60 mt-2 ml-2">
-            <span>{format(new Date(message.createdAt), "HH:mm")}</span>
+          <span>
+            {message.createdAt
+              ? format(new Date(message.createdAt), "HH:mm")
+              : ""}
+          </span>
+
             {isUserMessage && (
               <>
-                {message.messageStatus === "send" && <FaCheck size={12} />}
+               {message.messageStatus === "sent" && <FaCheck size={12} />}
+
                 {message.messageStatus === "delivered" && (
                   <FaCheckDouble size={12} />
                 )}
