@@ -12,8 +12,7 @@ export const initializeSocket = () => {
   
   if (!user?._id) return null;
 
-  const BACKEND_URL =
-    process.env.REACT_APP_API_URL || "http://localhost:8000";
+  const BACKEND_URL = "https://whatsappclonebackend-149w.onrender.com"
 
   socket = io(BACKEND_URL, {
     withCredentials: true,

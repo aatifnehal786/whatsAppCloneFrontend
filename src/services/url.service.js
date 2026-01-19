@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const apiUrl = `${process.env.REACT_APP_API_URL}/api`;
+const apiUrl = "https://whatsappclonebackend-149w.onrender.com/api";
 
 const getToken = () => localStorage.getItem("auth_token");
 
