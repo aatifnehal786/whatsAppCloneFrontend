@@ -105,19 +105,6 @@ const Login = () => {
 
   
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace") {
-      if (otp[index]) {
-        // clear current input
-        const newOtp = [...otp];
-        newOtp[index] = "";
-        setOtp(newOtp);
-      } else if (index > 0) {
-        // move to previous input
-        inputsRef.current[index - 1]?.focus();
-      }
-    }
-  };
 
   const {
     register: loginRegister,
@@ -278,6 +265,21 @@ const handleOtpChange = (index, value) => {
   }
 };
 
+
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace") {
+      if (otp[index]) {
+        // clear current input
+        const newOtp = [...otp];
+        newOtp[index] = "";
+        setOtp(newOtp);
+      } else if (index > 0) {
+        // move to previous input
+        inputsRef.current[index - 1]?.focus();
+      }
+    }
+  };
 
   const ProgressBar = () => (
     <div
