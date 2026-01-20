@@ -76,6 +76,7 @@ const avatars = [
   "https://api.dicebear.com/6.x/avataaars/svg?seed=Luna",
   "https://api.dicebear.com/6.x/avataaars/svg?seed=Zoe",
 ];
+const OTP_LENGTH = 6;
 
 const Login = () => {
   const { step, setStep, userPhoneData, setUserPhoneData, resetLoginState } =
