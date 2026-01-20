@@ -76,7 +76,6 @@ const avatars = [
   "https://api.dicebear.com/6.x/avataaars/svg?seed=Luna",
   "https://api.dicebear.com/6.x/avataaars/svg?seed=Zoe",
 ];
-const OTP_LENGTH = 6;
 
 const Login = () => {
   const { step, setStep, userPhoneData, setUserPhoneData, resetLoginState } =
@@ -95,15 +94,7 @@ const Login = () => {
   const { setUser } = userStore();
   const { theme } = useThemeStore();
   const navigate = useNavigate();
-  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
-  const inputsRef = useRef([]);
-
-  // Focus first input on mount
-  useEffect(() => {
-    inputsRef.current[0]?.focus();
-  }, []);
-
-  
+  const [otp, setOtp] = useState(Array(6).fill(""));
 
 
   const {
@@ -265,21 +256,6 @@ const handleOtpChange = (index, value) => {
   }
 };
 
-
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace") {
-      if (otp[index]) {
-        // clear current input
-        const newOtp = [...otp];
-        newOtp[index] = "";
-        setOtp(newOtp);
-      } else if (index > 0) {
-        // move to previous input
-        inputsRef.current[index - 1]?.focus();
-      }
-    }
-  };
 
   const ProgressBar = () => (
     <div
@@ -481,22 +457,21 @@ const handleOtpChange = (index, value) => {
             <div className="flex justify-between">
               {otp.map((digit, index) => (
                 <input
-                type="text"
-                ref={(el) => (inputsRef.current[index] = el)}
-          inputMode="numeric"
-          maxLength={1}
-          value={digit}
-          onChange={(e) => handleOtpChange(e, index)}
-          onKeyDown={(e) => handleKeyDown(e, index)}
                   key={index}
                   id={`otp-${index}`}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
                   className={`w-12 h-12 text-center border ${theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300"
                     } rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 ${otpErrors.otp ? "border-red-500" : ""
                     }`}
-                />
-              ))}
+  />
+))}
+
             </div>
             {otpErrors.otp && (
               <p className="text-red-500 text-sm">{otpErrors.otp.message}</p>
