@@ -84,7 +84,6 @@ const Login = () => {
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
   const [selectedAvatar, setSelectedAvatar] = useState(avatars[0]);
@@ -95,6 +94,29 @@ const Login = () => {
   const { setUser } = userStore();
   const { theme } = useThemeStore();
   const navigate = useNavigate();
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(""));
+  const inputsRef = useRef([]);
+
+  // Focus first input on mount
+  useEffect(() => {
+    inputsRef.current[0]?.focus();
+  }, []);
+
+  
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace") {
+      if (otp[index]) {
+        // clear current input
+        const newOtp = [...otp];
+        newOtp[index] = "";
+        setOtp(newOtp);
+      } else if (index > 0) {
+        // move to previous input
+        inputsRef.current[index - 1]?.focus();
+      }
+    }
+  };
 
   const {
     register: loginRegister,
@@ -240,15 +262,21 @@ const Login = () => {
     }
   };
 
-  const handleOtpChange = (index, value) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    setOtpValue("otp", newOtp.join(""));
-    if (value && index < 5) {
-      document.getElementById(`otp-${index + 1}`).focus();
-    }
-  };
+const handleOtpChange = (index, value) => {
+  // allow only digits
+  if (!/^\d?$/.test(value)) return;
+
+  const newOtp = [...otp];
+  newOtp[index] = value;
+  setOtp(newOtp);
+  setOtpValue("otp", newOtp.join(""));
+
+  // move to next input
+  if (value && index < 5) {
+    document.getElementById(`otp-${index + 1}`)?.focus();
+  }
+};
+
 
   const ProgressBar = () => (
     <div
@@ -450,12 +478,15 @@ const Login = () => {
             <div className="flex justify-between">
               {otp.map((digit, index) => (
                 <input
+                type="text"
+                ref={(el) => (inputsRef.current[index] = el)}
+          inputMode="numeric"
+          maxLength={1}
+          value={digit}
+          onChange={(e) => handleOtpChange(e, index)}
+          onKeyDown={(e) => handleKeyDown(e, index)}
                   key={index}
                   id={`otp-${index}`}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
                   className={`w-12 h-12 text-center border ${theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300"
