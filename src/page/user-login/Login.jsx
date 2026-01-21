@@ -241,6 +241,11 @@ const Login = () => {
     }
   };
 
+  useEffect(() => {
+  document.getElementById("otp-0")?.focus();
+}, []);
+
+
 const handleOtpChange = (index, value) => {
   // allow only digits
   if (!/^\d?$/.test(value)) return;
@@ -255,6 +260,22 @@ const handleOtpChange = (index, value) => {
     document.getElementById(`otp-${index + 1}`)?.focus();
   }
 };
+
+const handleOtpKeyDown = (index, e) => {
+  if (e.key === "Backspace") {
+    if (otp[index]) {
+      // clear current digit
+      const newOtp = [...otp];
+      newOtp[index] = "";
+      setOtp(newOtp);
+      setOtpValue("otp", newOtp.join(""));
+    } else if (index > 0) {
+      // move backward
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  }
+};
+
 
 
   const ProgressBar = () => (
@@ -464,6 +485,7 @@ const handleOtpChange = (index, value) => {
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   className={`w-12 h-12 text-center border ${theme === "dark"
                       ? "bg-gray-700 border-gray-600 text-white"
                       : "bg-white border-gray-300"
