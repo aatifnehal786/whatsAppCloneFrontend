@@ -24,15 +24,22 @@ export default function Setting() {
     setIsThemeDialogOpen(!isThemeDialogOpen);
   };
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      clearUser();
-      toast.success("user logged out");
-    } catch (error) {
-      console.error(error, "failed to log out");
-    }
-  };
+const handleLogout = async () => {
+  try {
+    await logoutUser();
+
+    clearUser();               // Zustand / Context
+    localStorage.clear();      // tokens, flags
+    sessionStorage.clear();
+
+    toast.success("User logged out");
+
+    window.location.href = "/user-login"; // HARD redirect (important)
+  } catch (error) {
+    console.error("Failed to logout", error);
+  }
+};
+
 
   return (
     <Layout

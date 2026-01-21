@@ -30,7 +30,10 @@ export const sendOtp = async (phoneNumber, phoneSuffix,email) => {
 
 export const checkUserAuth = async () => {
   try {
-    const response = await axiosInstance.get("/users/check-auth");
+    const response = await axiosInstance.get("/users/check-auth", {
+      withCredentials: true, // 🔥 REQUIRED
+    });
+
     return {
       isAuthenticated: true,
       user: response.data.data,
@@ -39,6 +42,7 @@ export const checkUserAuth = async () => {
     return { isAuthenticated: false };
   }
 };
+
 
 
 

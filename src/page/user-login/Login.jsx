@@ -96,6 +96,11 @@ const Login = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(Array(6).fill(""));
 
+useEffect(() => {
+  setTimeout(() => {
+    document.getElementById("otp-0")?.focus();
+  }, 100);
+}, []);
 
   const {
     register: loginRegister,
@@ -241,9 +246,9 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-  document.getElementById("otp-0")?.focus();
-}, []);
+
+
+
 
 
 const handleOtpChange = (index, value) => {
@@ -478,10 +483,12 @@ const handleOtpKeyDown = (index, e) => {
             <div className="flex justify-between">
               {otp.map((digit, index) => (
                 <input
-                  key={index}
                   id={`otp-${index}`}
+                  key={index}
                   type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="one-time-code"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
