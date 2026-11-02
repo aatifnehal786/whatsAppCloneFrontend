@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const apiUrl = `${process.env.REACT_APP_API_URL}/api`;
+const apiUrl = "https://whatsappclonebackend-149w.onrender.com/api"; // Replace with your backend API URL
 
-const getToken = () => localStorage.getItem("auth_token");
+const getToken = () => localStorage.getItem("user_storage");
 
 const axiosInstance = axios.create({
   baseURL: apiUrl,
