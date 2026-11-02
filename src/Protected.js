@@ -10,10 +10,6 @@ export const ProtectedRoute = () => {
   
   const { isAuthenticated, setUser, clearUser } = userStore(); // Access user auth state and actions from your store
 
-
-
- 
-
   useEffect(() => {
     const verifyAuth = async () => {
       try {

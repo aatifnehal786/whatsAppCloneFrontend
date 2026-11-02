@@ -13,11 +13,10 @@ const ChatList = ({ contacts }) => {
     const { user } = userStore();
   const [searchTerm, setSearchTerm] = useState("");
   // Filter contacts based on the search term
-  // const filteredContacts = contacts?.filter((contact) =>
-  //   contact?.username?.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
-console.log(user)
-console.log(selectedContact)
+  const filteredContacts = contacts?.filter((contact) =>
+    contact?.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div
       className={`w-full border-r h-screen ${
@@ -57,7 +56,7 @@ console.log(selectedContact)
         </div>
       </div>
       <div className="overflow-y-auto h-[calc(100vh-120px)]">
-        {contacts.map((contact) => (
+        {filteredContacts.map((contact) => (
           <motion.div
             key={contact._id}
             onClick={() => setSelectedContact(contact)}

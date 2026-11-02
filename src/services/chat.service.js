@@ -12,15 +12,14 @@ export const initializeSocket = () => {
   
   if (!user?._id) return null;
 
-  const BACKEND_URL = "https://whatsappclonebackend-149w.onrender.com"
-
+  const BACKEND_URL = process.env.REACT_APP_API_URL;
+  
   socket = io(BACKEND_URL, {
-    withCredentials: true,
-    autoConnect: true,
-    reconnection: true,
-    reconnectionAttempts: 10,
+    // auth: { token },
+    withCredentials:true,
+    transports: ["websocket", "polling"],
+    reconnectionAttempts: 5,
     reconnectionDelay: 1000,
-    // 🚫 DO NOT force transports
   });
 
   // Connection events
