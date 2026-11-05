@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import useUserStore from "../store/useUserStore";
 
 let socket = null;
-const token = localStorage.getItem("auth_token");
+// const token = localStorage.getItem("login-storage");
 
 
 export const initializeSocket = () => {
@@ -12,7 +12,7 @@ export const initializeSocket = () => {
   
   if (!user?._id) return null;
 
-  const BACKEND_URL = process.env.REACT_APP_API_URL;
+  const BACKEND_URL = "https://whatsappclonebackend-149w.onrender.com";
   
   socket = io(BACKEND_URL, {
     // auth: { token },

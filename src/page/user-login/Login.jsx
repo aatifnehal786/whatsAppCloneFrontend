@@ -95,7 +95,7 @@ const Login = () => {
   const { setUser } = userStore();
   const { theme } = useThemeStore();
   const navigate = useNavigate();
-
+  const [showTerms, setShowTerms] = useState(false);
   const {
     register: loginRegister,
     handleSubmit: handleLoginSubmit,
@@ -598,9 +598,13 @@ const Login = () => {
                 }`}
               >
                 I agree to the{" "}
-                <a href="#" className="text-green-500 hover:underline">
-                  Terms and Conditions
-                </a>
+                <button
+  type="button"
+  onClick={() => setShowTerms(true)}
+  className="text-green-500 hover:underline bg-transparent border-0 p-0"
+>
+  Terms and Conditions
+</button>
               </label>
             </div>
             {profileErrors.agreed && (

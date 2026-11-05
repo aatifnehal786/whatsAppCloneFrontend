@@ -23,7 +23,7 @@ export default function StatusPage() {
   const { theme } = useThemeStore()
   const { user } = useUserStore()
 
-  // Status store
+    // Status store
   const {
     statuses,
     loading,
@@ -34,7 +34,6 @@ export default function StatusPage() {
     deleteStatus,
     getUserStatuses,
     getOtherStatuses,
-    initializeSocket,
     cleanupSocket,
     clearError,
   } = useStatusStore()
@@ -48,11 +47,13 @@ export default function StatusPage() {
     return () => {
       cleanupSocket()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?._id])
 
-  // Clear error when component mounts
+  // Clear error when component unmounts
   useEffect(() => {
     return () => clearError()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleFileChange = (e) => {

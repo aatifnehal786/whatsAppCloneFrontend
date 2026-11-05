@@ -43,7 +43,6 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
   const socket = getSocket();
   const {
     messages,
-    loading,
     sendMessage,
     startTyping,
     stopTyping,
@@ -56,7 +55,7 @@ export default function ChatWindow({ selectedContact, setSelectedContact }) {
     addReaction,
     deleteMessage,
   } = useChatStore();
-  const { initiateCall } = useVideoCallStore();
+  // const { initiateCall } = useVideoCallStore();
 
   // Get online status and last seen
   const online = isUserOnline(selectedContact?._id);

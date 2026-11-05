@@ -14,7 +14,7 @@ export default function UserDetails() {
   const [about, setAbout] = useState("Hey there! I am using WhatsApp.");
   const [profileImage, setProfileImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  // const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
@@ -37,11 +37,11 @@ export default function UserDetails() {
     if (file) setPreview(URL.createObjectURL(file));
   };
 
-  const handleAvatarSelect = (url) => {
-    setProfileImage(null); // remove file if avatar selected
-    setPreview(url);
-    setShowAvatarModal(false);
-  };
+  // const handleAvatarSelect = (url) => {
+  //   setProfileImage(null); // remove file if avatar selected
+  //   setPreview(url);
+  //   setShowAvatarModal(false);
+  // };
 
   const handleSave = async (field) => {
     try {

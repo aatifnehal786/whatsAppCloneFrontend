@@ -2,7 +2,7 @@ import axios from "axios";
 
 const apiUrl = "https://whatsappclonebackend-149w.onrender.com/api"; // Replace with your backend API URL
 
-const getToken = () => localStorage.getItem("user_storage");
+const token = localStorage.getItem("login-storage");
 
 const axiosInstance = axios.create({
   baseURL: apiUrl,
@@ -10,12 +10,12 @@ const axiosInstance = axios.create({
 });
 
 // Attach token to every request
-// axiosInstance.interceptors.request.use((config) => {
-//   const token = getToken();
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
+axiosInstance.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default axiosInstance;

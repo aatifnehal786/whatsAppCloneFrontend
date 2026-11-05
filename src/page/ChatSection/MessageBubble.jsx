@@ -65,7 +65,7 @@ const optionsRef = useRef(null);
             <div>
               <img
                 src={message.imageOrVideoUrl}
-                alt="Shared image"
+                alt=""
                 className="rounded-lg max-w-xs"
               />
               <p className="mt-1">{message.content}</p>
